@@ -10,6 +10,7 @@
     <canvas id="gameCanvas"></canvas>
     <div id="gameStats">
         <p>Score: <span id="score">0</span></p>
+        <p>HP: <span id="playerHp">10</span>/<span id="playerMaxHp">10</span></p>
         <p>Enemies Defeated for Power-up: <span id="enemiesDefeatedForPowerUp">0</span> / <span id="powerUpThreshold">5</span></p>
         <p>Player Level: <span id="playerLevel">1</span></p>
         <label><input type="checkbox" id="invincibleMode"> Invincible Mode</label>
@@ -17,6 +18,7 @@
 
     <div id="powerUpSelection" class="hidden">
         <h2>Choose Your Upgrade!</h2>
+        <button id="upgradeHp">Recover HP</button>
         <button id="upgradeSpeed">Increase Speed</button>
         <!-- <button id="upgradeAttack">Increase Attack Power</button> -->
         <button id="upgradeRotation">Increase Weapon Rotation Speed</button>

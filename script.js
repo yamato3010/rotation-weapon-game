@@ -93,7 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
         dx: 0,
         dy: 0,
         attackPower: 1,
-        color: 'blue'
+        color: 'blue',
+        hp: 10,
+        maxHp: 10
     };
 
     // Initial weapon (call after player is defined)
@@ -101,6 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // グローバル変数に代入
     scoreDisplay = document.getElementById('score');
+    playerHpDisplay = document.getElementById('playerHp');
+    playerMaxHpDisplay = document.getElementById('playerMaxHp');
     enemiesDefeatedForPowerUpDisplay = document.getElementById('enemiesDefeatedForPowerUp');
     powerUpThresholdDisplay = document.getElementById('powerUpThreshold');
     playerLevelDisplay = document.getElementById('playerLevel');
@@ -110,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     finalScoreDisplay = document.getElementById('finalScore');
     restartButton = document.getElementById('restartButton');
 
+    upgradeHpBtn = document.getElementById('upgradeHp');
     upgradeSpeedBtn = document.getElementById('upgradeSpeed');
     upgradeAttackBtn = document.getElementById('upgradeAttack');
     upgradeRotationBtn = document.getElementById('upgradeRotation');
@@ -127,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Power-up selection event listeners
+    upgradeHpBtn.addEventListener('click', () => applyUpgrade('hp'));
     upgradeSpeedBtn.addEventListener('click', () => applyUpgrade('speed'));
     // upgradeAttackBtn.addEventListener('click', () => applyUpgrade('attack'));
     upgradeRotationBtn.addEventListener('click', () => applyUpgrade('rotation'));
@@ -136,6 +142,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Define functions that use these elements within this scope or pass them as arguments
     function updateStatsDisplay() {
         scoreDisplay.textContent = score;
+        playerHpDisplay.textContent = player.hp;
+        playerMaxHpDisplay.textContent = player.maxHp;
         enemiesDefeatedForPowerUpDisplay.textContent = enemiesDefeated;
         powerUpThresholdDisplay.textContent = powerUpThreshold;
         playerLevelDisplay.textContent = playerLevel;
@@ -159,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         player.y = canvas.height / 2;
         player.speed = 5;
         player.attackPower = 1;
+        player.hp = player.maxHp;
 
         weapons = [];
         addWeapon(); 
@@ -256,6 +265,7 @@ function updateEnemies(deltaTime) {
 
     const aliveEnemies = [];
     enemies.forEach(enemy => {
+        let enemyHit = false; 
         // Move towards player
         const angleToPlayer = Math.atan2(player.y - enemy.y, player.x - enemy.x);
         enemy.x += Math.cos(angleToPlayer) * enemy.speed;
@@ -276,11 +286,15 @@ function updateEnemies(deltaTime) {
         const dy = player.y - enemy.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         if (!isInvincible && distance < (player.size / 2) + (enemy.size / 2)) { 
-            gameOver = true; 
-            return; 
+            player.hp -= 1; // 1ダメージ
+            if (player.hp <= 0) {
+                gameOver = true;
+            }
+            // ダメージを受けたら敵を消す
+            enemy.health = 0; // 敵のHPを0にして削除
+            enemyHit = true; // 敵を倒したことにする
         }
 
-        let enemyHit = false; 
         weapons.forEach(playerWeapon => {
             if (enemyHit) return; 
 
@@ -439,6 +453,9 @@ function checkPowerUp() {
 function applyUpgrade(type) {
     playerLevel++;
     switch (type) {
+        case 'hp':
+            player.hp = Math.min(player.maxHp, player.hp + 5); // 5回復、最大HPを超えない
+            break;
         case 'speed':
             player.speed += 1;
             break;
@@ -476,12 +493,14 @@ function applyUpgrade(type) {
 
 // These functions need to be defined within the DOMContentLoaded scope or passed the elements
 // as arguments, as they use the element references.
-let scoreDisplay, enemiesDefeatedForPowerUpDisplay, powerUpThresholdDisplay, playerLevelDisplay;
+let scoreDisplay, playerHpDisplay, playerMaxHpDisplay, enemiesDefeatedForPowerUpDisplay, powerUpThresholdDisplay, playerLevelDisplay;
 let powerUpSelectionDiv, invincibleModeCheckbox, gameOverScreen, finalScoreDisplay, restartButton;
-let upgradeSpeedBtn, upgradeAttackBtn, upgradeRotationBtn, upgradeLengthBtn, upgradeWeaponsBtn;
+let upgradeHpBtn, upgradeSpeedBtn, upgradeAttackBtn, upgradeRotationBtn, upgradeLengthBtn, upgradeWeaponsBtn;
 
 function updateStatsDisplay() {
     scoreDisplay.textContent = score;
+    playerHpDisplay.textContent = player.hp;
+    playerMaxHpDisplay.textContent = player.maxHp;
     enemiesDefeatedForPowerUpDisplay.textContent = enemiesDefeated;
     powerUpThresholdDisplay.textContent = powerUpThreshold;
     playerLevelDisplay.textContent = playerLevel;
@@ -505,6 +524,7 @@ function resetGame() {
     player.y = canvas.height / 2;
     player.speed = 5;
     player.attackPower = 1;
+    player.hp = player.maxHp; // HPを最大にリセット
 
     weapons = [];
     addWeapon(); 
