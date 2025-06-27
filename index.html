@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weapon Master</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="gameStats">
+        <p>Score: <span id="score">0</span></p>
+        <p>Enemies Defeated for Power-up: <span id="enemiesDefeatedForPowerUp">0</span> / <span id="powerUpThreshold">5</span></p>
+        <p>Player Level: <span id="playerLevel">1</span></p>
+        <label><input type="checkbox" id="invincibleMode"> Invincible Mode</label>
+    </div>
+
+    <div id="powerUpSelection" class="hidden">
+        <h2>Choose Your Upgrade!</h2>
+        <button id="upgradeSpeed">Increase Speed</button>
+        <button id="upgradeAttack">Increase Attack Power</button>
+        <button id="upgradeRotation">Increase Weapon Rotation Speed</button>
+        <button id="upgradeLength">Increase Weapon Length</button>
+        <button id="upgradeWeapons">Add Another Weapon</button>
+    </div>
+
+    <div id="gameOverScreen" class="hidden">
+        <h2>GAME OVER</h2>
+        <p>Score: <span id="finalScore">0</span></p>
+        <button id="restartButton">Restart</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

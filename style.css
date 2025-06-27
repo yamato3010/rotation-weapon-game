@@ -1,0 +1,107 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #333;
+    font-family: 'Press Start 2P', cursive; /* ピクセルフォントを想定 */
+    color: #eee;
+}
+
+canvas {
+    background-color: #000;
+    border: 2px solid #555;
+}
+
+#gameStats {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1.2em;
+    z-index: 10;
+}
+
+#gameStats p {
+    margin: 5px 0;
+}
+
+#powerUpSelection {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    z-index: 100;
+    border: 2px solid #0f0;
+}
+
+#powerUpSelection h2 {
+    color: #0f0;
+    margin-bottom: 20px;
+}
+
+#powerUpSelection button {
+    display: block;
+    width: 250px;
+    padding: 15px;
+    margin: 10px auto;
+    background-color: #0a0;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#powerUpSelection button:hover {
+    background-color: #0c0;
+}
+
+#gameOverScreen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    z-index: 100;
+    border: 2px solid #f00;
+}
+
+#gameOverScreen h2 {
+    color: #f00;
+    margin-bottom: 20px;
+}
+
+#gameOverScreen button {
+    display: block;
+    width: 200px;
+    padding: 15px;
+    margin: 20px auto;
+    background-color: #a00;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#gameOverScreen button:hover {
+    background-color: #c00;
+}
+
+.hidden {
+    display: none;
+}
