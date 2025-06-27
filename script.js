@@ -1,25 +1,3 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-
-canvas.width = 800;
-canvas.height = 600;
-
-const scoreDisplay = document.getElementById('score');
-const enemiesDefeatedForPowerUpDisplay = document.getElementById('enemiesDefeatedForPowerUp');
-const powerUpThresholdDisplay = document.getElementById('powerUpThreshold');
-const playerLevelDisplay = document.getElementById('playerLevel');
-const powerUpSelectionDiv = document.getElementById('powerUpSelection');
-const invincibleModeCheckbox = document.getElementById('invincibleMode');
-const gameOverScreen = document.getElementById('gameOverScreen');
-const finalScoreDisplay = document.getElementById('finalScore');
-const restartButton = document.getElementById('restartButton');
-
-const upgradeSpeedBtn = document.getElementById('upgradeSpeed');
-const upgradeAttackBtn = document.getElementById('upgradeAttack');
-const upgradeRotationBtn = document.getElementById('upgradeRotation');
-const upgradeLengthBtn = document.getElementById('upgradeLength');
-const upgradeWeaponsBtn = document.getElementById('upgradeWeapons');
-
 let score = 0;
 let enemiesDefeated = 0;
 let powerUpThreshold = 5;
@@ -28,23 +6,14 @@ let gamePaused = false;
 let gameOver = false; 
 let isInvincible = false; 
 
-// Player
-const player = {
-    x: canvas.width / 2,
-    y: canvas.height / 2,
-    size: 30,
-    speed: 5,
-    dx: 0,
-    dy: 0,
-    attackPower: 1,
-    color: 'blue'
-};
+let canvas; // Declare globally
+let ctx;    // Declare globally
+
+let player; // Declare player globally
 
 // Weapons (now an array)
 let weapons = [];
 
-// Initial weapon
-addWeapon();
 
 function addWeapon() {
     const newWeapon = {
@@ -69,6 +38,7 @@ function updateWeaponAngles() {
 let enemies = [];
 const enemySpawnInterval = 1000; 
 let lastEnemySpawnTime = 0;
+const weaponEnemySpawnThreshold = 100; // Score threshold to start spawning weapon enemies
 
 // Input handling
 const keys = {};
@@ -81,22 +51,131 @@ document.addEventListener('keyup', (e) => {
     keys[e.key] = false;
 });
 
-// Invincible mode checkbox listener
-invincibleModeCheckbox.addEventListener('change', (e) => {
-    isInvincible = e.target.checked;
-});
+let lastTime = 0;
+function gameLoop(currentTime) {
+    if (gameOver) {
+        drawGameOver();
+        return; 
+    }
 
-// Restart button listener
-restartButton.addEventListener('click', () => {
-    resetGame();
-});
+    if (!gamePaused) {
+        const deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
 
-// Power-up selection event listeners
-upgradeSpeedBtn.addEventListener('click', () => applyUpgrade('speed'));
-upgradeAttackBtn.addEventListener('click', () => applyUpgrade('attack'));
-upgradeRotationBtn.addEventListener('click', () => applyUpgrade('rotation'));
-upgradeLengthBtn.addEventListener('click', () => applyUpgrade('length'));
-upgradeWeaponsBtn.addEventListener('click', () => applyUpgrade('weapons'));
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        updatePlayer();
+        updateWeapon(deltaTime);
+        updateEnemies(deltaTime);
+        updateStatsDisplay();
+
+        drawPlayer();
+        drawWeapon();
+        drawEnemies();
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    canvas = document.getElementById('gameCanvas');
+    ctx = canvas.getContext('2d');
+
+    canvas.width = 800;
+    canvas.height = 600;
+
+    // Initialize player after canvas is defined
+    player = {
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        size: 30,
+        speed: 5,
+        dx: 0,
+        dy: 0,
+        attackPower: 1,
+        color: 'blue'
+    };
+
+    // Initial weapon (call after player is defined)
+    addWeapon();
+
+    // グローバル変数に代入
+    scoreDisplay = document.getElementById('score');
+    enemiesDefeatedForPowerUpDisplay = document.getElementById('enemiesDefeatedForPowerUp');
+    powerUpThresholdDisplay = document.getElementById('powerUpThreshold');
+    playerLevelDisplay = document.getElementById('playerLevel');
+    powerUpSelectionDiv = document.getElementById('powerUpSelection');
+    invincibleModeCheckbox = document.getElementById('invincibleMode');
+    gameOverScreen = document.getElementById('gameOverScreen');
+    finalScoreDisplay = document.getElementById('finalScore');
+    restartButton = document.getElementById('restartButton');
+
+    upgradeSpeedBtn = document.getElementById('upgradeSpeed');
+    upgradeAttackBtn = document.getElementById('upgradeAttack');
+    upgradeRotationBtn = document.getElementById('upgradeRotation');
+    upgradeLengthBtn = document.getElementById('upgradeLength');
+    upgradeWeaponsBtn = document.getElementById('upgradeWeapons');
+
+    // Invincible mode checkbox listener
+    invincibleModeCheckbox.addEventListener('change', (e) => {
+        isInvincible = e.target.checked;
+    });
+
+    // Restart button listener
+    restartButton.addEventListener('click', () => {
+        resetGame();
+    });
+
+    // Power-up selection event listeners
+    upgradeSpeedBtn.addEventListener('click', () => applyUpgrade('speed'));
+    // upgradeAttackBtn.addEventListener('click', () => applyUpgrade('attack'));
+    upgradeRotationBtn.addEventListener('click', () => applyUpgrade('rotation'));
+    upgradeLengthBtn.addEventListener('click', () => applyUpgrade('length'));
+    upgradeWeaponsBtn.addEventListener('click', () => applyUpgrade('weapons'));
+
+    // Define functions that use these elements within this scope or pass them as arguments
+    function updateStatsDisplay() {
+        scoreDisplay.textContent = score;
+        enemiesDefeatedForPowerUpDisplay.textContent = enemiesDefeated;
+        powerUpThresholdDisplay.textContent = powerUpThreshold;
+        playerLevelDisplay.textContent = playerLevel;
+    }
+
+    function drawGameOver() {
+        gameOverScreen.classList.remove('hidden');
+        finalScoreDisplay.textContent = score;
+    }
+
+    function resetGame() {
+        score = 0;
+        enemiesDefeated = 0;
+        powerUpThreshold = 5;
+        playerLevel = 1;
+        gamePaused = false;
+        gameOver = false;
+        isInvincible = false;
+
+        player.x = canvas.width / 2;
+        player.y = canvas.height / 2;
+        player.speed = 5;
+        player.attackPower = 1;
+
+        weapons = [];
+        addWeapon(); 
+
+        enemies = [];
+        lastEnemySpawnTime = 0;
+
+        invincibleModeCheckbox.checked = false;
+        gameOverScreen.classList.add('hidden');
+        updateStatsDisplay();
+        gameLoop(0); 
+    }
+
+    // Initial call to start the game loop
+    updateStatsDisplay(); 
+    gameLoop(0); 
+});
 
 function drawPlayer() {
     ctx.fillStyle = player.color;
@@ -118,12 +197,19 @@ function drawEnemies() {
     enemies.forEach(enemy => {
         ctx.fillStyle = enemy.color;
         ctx.fillRect(enemy.x - enemy.size / 2, enemy.y - enemy.size / 2, enemy.size, enemy.size);
-    });
-}
 
-function drawGameOver() {
-    gameOverScreen.classList.remove('hidden');
-    finalScoreDisplay.textContent = score;
+        // Draw enemy weapons if it has any
+        if (enemy.weapons && enemy.weapons.length > 0) {
+            enemy.weapons.forEach(enemyWeapon => {
+                ctx.save();
+                ctx.translate(enemy.x, enemy.y);
+                ctx.rotate(enemyWeapon.angle);
+                ctx.fillStyle = enemyWeapon.color;
+                ctx.fillRect(enemy.size / 2, -3, enemyWeapon.length, 6); 
+                ctx.restore();
+            });
+        }
+    });
 }
 
 function updatePlayer() {
@@ -175,6 +261,16 @@ function updateEnemies(deltaTime) {
         enemy.x += Math.cos(angleToPlayer) * enemy.speed;
         enemy.y += Math.sin(angleToPlayer) * enemy.speed;
 
+        // Update enemy weapon angles
+        if (enemy.weapons && enemy.weapons.length > 0) {
+            enemy.weapons.forEach(enemyWeapon => {
+                enemyWeapon.angle += enemyWeapon.rotationSpeed;
+                if (enemyWeapon.angle > Math.PI * 2) {
+                    enemyWeapon.angle -= Math.PI * 2;
+                }
+            });
+        }
+
         // Check for player-enemy collision
         const dx = player.x - enemy.x;
         const dy = player.y - enemy.y;
@@ -185,29 +281,27 @@ function updateEnemies(deltaTime) {
         }
 
         let enemyHit = false; 
-        weapons.forEach(weapon => {
+        weapons.forEach(playerWeapon => {
             if (enemyHit) return; 
 
             const dist = Math.sqrt(Math.pow(enemy.x - player.x, 2) + Math.pow(enemy.y - player.y, 2));
 
-            // Weapon's radial range from player's center
-            const weaponInnerRadius = player.size / 2; 
-            const weaponOuterRadius = player.size / 2 + weapon.length;
+            // Player Weapon's radial range from player's center
+            const playerWeaponInnerRadius = player.size / 2; 
+            const playerWeaponOuterRadius = player.size / 2 + playerWeapon.length;
 
-            // Check if enemy's radial position overlaps with weapon's radial range
-            const radialOverlap = (dist + enemy.size / 2 > weaponInnerRadius) && (dist - enemy.size / 2 < weaponOuterRadius);
+            // Check if enemy's radial position overlaps with player weapon's radial range
+            const radialOverlap = (dist + enemy.size / 2 > playerWeaponInnerRadius) && (dist - enemy.size / 2 < playerWeaponOuterRadius);
 
             if (radialOverlap) {
                 const enemyAngleFromPlayer = Math.atan2(enemy.y - player.y, enemy.x - player.x);
 
-                // Calculate the angular width of the weapon's effective hit area
-                // Consider the weapon's thickness (10) and the enemy's diameter (enemy.size)
-                const effectiveWeaponThickness = 10 + enemy.size; 
-                const averageWeaponDistance = player.size / 2 + weapon.length / 2; 
-                const weaponAngularWidth = Math.atan2(effectiveWeaponThickness / 2, averageWeaponDistance);
+                const effectivePlayerWeaponThickness = player.size + enemy.size; 
+                const averagePlayerWeaponDistance = player.size / 2 + playerWeapon.length / 2; 
+                const playerWeaponAngularWidth = Math.atan2(effectivePlayerWeaponThickness / 2, averagePlayerWeaponDistance);
 
-                const minWeaponAngle = weapon.angle - weaponAngularWidth / 2;
-                const maxWeaponAngle = weapon.angle + weaponAngularWidth / 2;
+                const minPlayerWeaponAngle = playerWeapon.angle - playerWeaponAngularWidth / 2;
+                const maxPlayerWeaponAngle = playerWeapon.angle + playerWeaponAngularWidth / 2;
 
                 const normalizeAngle = (angle) => {
                     while (angle < 0) angle += Math.PI * 2;
@@ -216,22 +310,22 @@ function updateEnemies(deltaTime) {
                 };
 
                 const normalizedEnemyAngle = normalizeAngle(enemyAngleFromPlayer);
-                const normalizedMinWeaponAngle = normalizeAngle(minWeaponAngle);
-                const normalizedMaxWeaponAngle = normalizeAngle(maxWeaponAngle);
+                const normalizedMinPlayerWeaponAngle = normalizeAngle(minPlayerWeaponAngle);
+                const normalizedMaxPlayerWeaponAngle = normalizeAngle(maxPlayerWeaponAngle);
 
                 let hit = false;
-                if (normalizedMinWeaponAngle <= normalizedMaxWeaponAngle) {
-                    if (normalizedEnemyAngle >= normalizedMinWeaponAngle && normalizedEnemyAngle <= normalizedMaxWeaponAngle) {
+                if (normalizedMinPlayerWeaponAngle <= normalizedMaxPlayerWeaponAngle) {
+                    if (normalizedEnemyAngle >= normalizedMinPlayerWeaponAngle && normalizedEnemyAngle <= normalizedMaxPlayerWeaponAngle) {
                         hit = true;
                     }
                 } else {
-                    if (normalizedEnemyAngle >= normalizedMinWeaponAngle || normalizedEnemyAngle <= normalizedMaxWeaponAngle) {
+                    if (normalizedEnemyAngle >= normalizedMinPlayerWeaponAngle || normalizedEnemyAngle <= normalizedMaxPlayerWeaponAngle) {
                         hit = true;
                     }
                 }
 
                 if (hit) {
-                    enemy.health -= weapon.damage * player.attackPower;
+                    enemy.health -= playerWeapon.damage * player.attackPower;
                     if (enemy.health <= 0) {
                         score += enemy.scoreValue;
                         enemiesDefeated++;
@@ -241,6 +335,33 @@ function updateEnemies(deltaTime) {
                 }
             }
         });
+
+        // Check for player weapon vs enemy weapon collision
+        if (enemy.weapons && enemy.weapons.length > 0) {
+            weapons.forEach(playerWeapon => {
+                enemy.weapons.forEach(enemyWeapon => {
+                    // Calculate player weapon tip position
+                    const playerWeaponTipX = player.x + Math.cos(playerWeapon.angle) * (player.size / 2 + playerWeapon.length);
+                    const playerWeaponTipY = player.y + Math.sin(playerWeapon.angle) * (player.size / 2 + playerWeapon.length);
+
+                    // Calculate enemy weapon tip position
+                    const enemyWeaponTipX = enemy.x + Math.cos(enemyWeapon.angle) * (enemy.size / 2 + enemyWeapon.length);
+                    const enemyWeaponTipY = enemy.y + Math.sin(enemyWeapon.angle) * (enemy.size / 2 + enemyWeapon.length);
+
+                    // Simple distance check between weapon tips (can be improved for more accurate collision)
+                    const weaponCollisionDistance = Math.sqrt(
+                        Math.pow(playerWeaponTipX - enemyWeaponTipX, 2) +
+                        Math.pow(playerWeaponTipY - enemyWeaponTipY, 2)
+                    );
+
+                    // If weapon tips are close enough, consider it a collision
+                    if (weaponCollisionDistance < 30) { 
+                        playerWeapon.rotationSpeed *= -1; 
+                        enemyWeapon.rotationSpeed *= -1; 
+                    }
+                });
+            });
+        }
 
         if (!enemyHit || enemy.health > 0) { 
             aliveEnemies.push(enemy);
@@ -277,7 +398,32 @@ function spawnEnemy() {
             break;
     }
 
-    enemies.push({ x, y, size, speed, health, scoreValue, color });
+    const newEnemy = { x, y, size, speed, health, scoreValue, color, weapons: [] }; 
+
+    let numEnemyWeapons = 0;
+    if (score >= 1000) {
+        numEnemyWeapons = 4;
+    } else if (score >= 600) {
+        numEnemyWeapons = 3;
+    } else if (score >= 300) {
+        numEnemyWeapons = 2;
+    } else if (score >= weaponEnemySpawnThreshold) {
+        numEnemyWeapons = 1;
+    }
+
+    if (numEnemyWeapons > 0 && Math.random() < 0.5) { 
+        const angleIncrement = (Math.PI * 2) / numEnemyWeapons;
+        for (let i = 0; i < numEnemyWeapons; i++) {
+            newEnemy.weapons.push({
+                angle: angleIncrement * i, 
+                rotationSpeed: (Math.random() > 0.5 ? 0.03 : -0.03), 
+                length: 30,
+                color: 'purple'
+            });
+        }
+    }
+
+    enemies.push(newEnemy);
 }
 
 function checkPowerUp() {
@@ -300,7 +446,14 @@ function applyUpgrade(type) {
             player.attackPower += 0.2;
             break;
         case 'rotation':
-            weapons.forEach(w => w.rotationSpeed += 0.03);
+            weapons.forEach(w => {
+                const increment = 0.05;
+                if (w.rotationSpeed < 0) {
+                    w.rotationSpeed -= increment;
+                } else {
+                    w.rotationSpeed += increment;
+                }
+            });
             break;
         case 'length':
             weapons.forEach(w => w.length += 10);
@@ -321,11 +474,22 @@ function applyUpgrade(type) {
     console.log('Player Leveled Up! Level: ' + playerLevel + ', Upgrade: ' + type);
 }
 
+// These functions need to be defined within the DOMContentLoaded scope or passed the elements
+// as arguments, as they use the element references.
+let scoreDisplay, enemiesDefeatedForPowerUpDisplay, powerUpThresholdDisplay, playerLevelDisplay;
+let powerUpSelectionDiv, invincibleModeCheckbox, gameOverScreen, finalScoreDisplay, restartButton;
+let upgradeSpeedBtn, upgradeAttackBtn, upgradeRotationBtn, upgradeLengthBtn, upgradeWeaponsBtn;
+
 function updateStatsDisplay() {
     scoreDisplay.textContent = score;
     enemiesDefeatedForPowerUpDisplay.textContent = enemiesDefeated;
     powerUpThresholdDisplay.textContent = powerUpThreshold;
     playerLevelDisplay.textContent = playerLevel;
+}
+
+function drawGameOver() {
+    gameOverScreen.classList.remove('hidden');
+    finalScoreDisplay.textContent = score;
 }
 
 function resetGame() {
@@ -343,7 +507,7 @@ function resetGame() {
     player.attackPower = 1;
 
     weapons = [];
-    addWeapon(); // Add initial weapon
+    addWeapon(); 
 
     enemies = [];
     lastEnemySpawnTime = 0;
@@ -351,35 +515,5 @@ function resetGame() {
     invincibleModeCheckbox.checked = false;
     gameOverScreen.classList.add('hidden');
     updateStatsDisplay();
-    gameLoop(0); // Restart the game loop
+    gameLoop(0); 
 }
-
-let lastTime = 0;
-function gameLoop(currentTime) {
-    if (gameOver) {
-        drawGameOver();
-        return; 
-    }
-
-    if (!gamePaused) {
-        const deltaTime = currentTime - lastTime;
-        lastTime = currentTime;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        updatePlayer();
-        updateWeapon(deltaTime);
-        updateEnemies(deltaTime);
-        updateStatsDisplay();
-
-        drawPlayer();
-        drawWeapon();
-        drawEnemies();
-    }
-
-    requestAnimationFrame(gameLoop);
-}
-
-// Initial call to start the game loop
-updateStatsDisplay(); 
-gameLoop(0);
