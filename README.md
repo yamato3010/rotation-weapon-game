@@ -2,6 +2,9 @@
 
 話題のGemini CLIを使って作ってみた、シンプルなローグライク風のアクションゲームです。
 
+以下のリンクからプレイ可能です。  
+https://yamato3010.github.io/rotation-weapon-game/
+
 ## 遊び方
 
 - **移動**: `矢印` キー
